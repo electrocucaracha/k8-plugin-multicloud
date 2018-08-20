@@ -14,6 +14,7 @@ limitations under the License.
 package api
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 	"plugin"
@@ -66,12 +67,14 @@ func LoadPlugins() error {
 	}
 	err := filepath.Walk(pluginsDir, func(path string, info os.FileInfo, err error) error {
 		if strings.Contains(path, ".so") {
+			log.Print("loading " + path + " file")
 
 			p, err := plugin.Open(path)
 			if err != nil {
-				return pkgerrors.Cause(err)
+				return pkgerrors.Wrap(err, "LoadPlugins error")
 			}
 			krd.LoadedPlugins[info.Name()[:len(info.Name())-3]] = p
+			log.Print(info.Name()[:len(info.Name())-3] + " loaded")
 		}
 		return err
 	})
